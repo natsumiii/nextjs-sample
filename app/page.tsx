@@ -8,11 +8,20 @@ export default function Home() {
         <h1>Next.js サンプル</h1>
 
         <Link
-          href="/form-demo"
+          href="/form-sample"
           className={styles.card}
         >
           <h2>
-            React Hook Form Demo <span>-&gt;</span>
+            React Hook Form sample <span>-&gt;</span>
+          </h2>
+        </Link>
+
+        <Link
+          href="/flash-message-sample"
+          className={styles.card}
+        >
+          <h2>
+            Flash Message sample <span>-&gt;</span>
           </h2>
         </Link>
       </main>
