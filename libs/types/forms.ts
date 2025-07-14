@@ -4,7 +4,7 @@ export type FormData = {
   region: string;
   gender: string;
   hobbies: string[];
-  otherHobby: string;
+  otherHobby?: string;
 };
 
 export type MasterData = {

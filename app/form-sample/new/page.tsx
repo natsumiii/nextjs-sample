@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
-import { createFormData } from '@/libs/features';
+import { createFormData } from '@/libs/fetchers';
 import { type FormData } from '@/libs/types';
 import styles from './page.module.scss';
 

@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { getMasterData, getFormData, updateFormData } from '@/libs/features';
+import { getMasterData, getFormData, updateFormData } from '@/libs/fetchers';
 import { type FormData } from '@/libs/types';
 import styles from './page.module.scss';
 
@@ -10,10 +10,13 @@ export default function EditFormPage() {
   const [regions, setRegions] = useState<string[]>([]);
   const [hobbies, setHobbies] = useState<string[]>([]);
   const [sampleData, setSampleData] = useState<FormData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isDirty, isValid }
   } = useForm<FormData>({
     defaultValues: {
@@ -27,7 +30,34 @@ export default function EditFormPage() {
     mode: 'onChange'
   });
 
+  // データ取得とフォームセット処理
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
+        // マスターデータ取得
+        const masterData = await getMasterData();
+        setRegions(masterData.regions);
+        setHobbies(masterData.hobbies);
+
+        // フォームデータ取得
+        const formData = await getFormData(1);
+        setSampleData(formData);
+
+        // react-hook-formにデータセット
+        reset(formData);
+      } catch (error) {
+        console.error('データ取得エラー:', error);
+        setError('データの取得に失敗しました。ページを再読み込みしてください。');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [reset]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -38,6 +68,36 @@ export default function EditFormPage() {
       alert('更新に失敗しました。もう一度お試しください。');
     }
   };
+
+  // ローディング中
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>フォーム編集</h1>
+        <div className={styles.loading}>
+          <p>データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // エラー時
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>フォーム編集</h1>
+        <div className={styles.error}>
+          <p>⚠️ {error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className={styles.retryButton}
+          >
+            再読み込み
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

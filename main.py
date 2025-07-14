@@ -10,11 +10,25 @@ app = FastAPI(title="User Registration Form Demo API")
 # CORS設定を追加
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Next.jsフロントエンドのURL
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"],  # Next.jsフロントエンドのURL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# フォームデータモデル
+class FormData(BaseModel):
+    name: str
+    postalCode: str
+    region: str
+    gender: str
+    hobbies: List[str]
+    otherHobby: Optional[str] = None
+
+# マスターデータモデル
+class MasterData(BaseModel):
+    regions: List[str]
+    hobbies: List[str]
 
 # ユーザーモデル
 class UserBase(BaseModel):
@@ -96,6 +110,24 @@ class UserUpdate(BaseModel):
             raise ValueError('自己紹介は500文字以内で入力してください')
         return v
 
+# サンプルフォームデータ
+sample_form_data = {
+    "1": {
+        "name": "田中太郎",
+        "postalCode": "100-0001",
+        "region": "東京都",
+        "gender": "男性",
+        "hobbies": ["読書", "映画鑑賞"],
+        "otherHobby": "プログラミング"
+    }
+}
+
+# マスターデータ
+master_data = {
+    "regions": ["東京都", "大阪府", "愛知県", "神奈川県", "埼玉県", "千葉県", "兵庫県", "福岡県", "北海道", "京都府"],
+    "hobbies": ["読書", "映画鑑賞", "スポーツ", "料理", "旅行", "音楽", "ゲーム", "写真", "絵画", "手芸"]
+}
+
 # サンプルデータ
 sample_users = [
     {
@@ -169,6 +201,27 @@ sample_users = [
         "updated_at": datetime(2024, 1, 5, 14, 0, 0)
     }
 ]
+
+# フォームデータ取得
+@app.get("/api/forms/{form_id}", response_model=FormData)
+async def get_form_data(form_id: str):
+    if form_id not in sample_form_data:
+        raise HTTPException(status_code=404, detail="フォームデータが見つかりません")
+    return sample_form_data[form_id]
+
+# フォームデータ更新
+@app.put("/api/forms/{form_id}")
+async def update_form_data(form_id: str, form_data: FormData):
+    if form_id not in sample_form_data:
+        raise HTTPException(status_code=404, detail="フォームデータが見つかりません")
+
+    sample_form_data[form_id] = form_data.model_dump()
+    return {"message": "フォームデータが正常に更新されました"}
+
+# マスターデータ取得
+@app.get("/api/master-data", response_model=MasterData)
+async def get_master_data():
+    return master_data
 
 # ユーザー一覧取得
 @app.get("/api/users", response_model=List[User])
